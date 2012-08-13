@@ -64,6 +64,7 @@ def search_view(request):
 def find_view(request):
   "View for finding metrics matching a given pattern"
   profile = getProfile(request)
+  jsonp = request.REQUEST.get('jsonp', False)
   format = request.REQUEST.get('format', 'treejson')
   local_only = int( request.REQUEST.get('local', 0) )
   wildcards = int( request.REQUEST.get('wildcards', 0) )
@@ -111,7 +112,10 @@ def find_view(request):
 
   if format == 'treejson':
     content = tree_json(matches, base_path, wildcards=profile.advancedUI or wildcards)
-    response = HttpResponse(content, mimetype='application/json')
+    if (jsonp):
+      response = HttpResponse("%s(%s)" % (jsonp, content), mimetype='text/javascript')
+    else:
+      response = HttpResponse(content, mimetype='application/json')
 
   elif format == 'pickle':
     content = pickle_nodes(matches)
